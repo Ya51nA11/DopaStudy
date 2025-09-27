@@ -1,43 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer with Upload</title>
+    <style>
+        /* Main layout container */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+        /* Top Navigation bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+        .navbar .nav-links {
+            display: flex;
+            gap: 15px;
+        }
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+        .navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .navbar .logo {
+            font-weight: bold;
+        }
+
+        /* Upload page and document container */
+        .upload-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 80px; /* Spacing to move below the navbar */
+            padding-bottom: 200px; /* Extra space to account for the fixed video player */
+        }
+
+        #document-container, #audio-container {
+            width: 80%;
+            max-width: 800px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Video container fixed at the bottom and centered */
+        #video-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px; /* Adjusted width to match the red box */
+            height: 170px; /* Adjusted height to maintain aspect ratio */
+            background-color: black;
+            z-index: 9;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Optional shadow for styling */
+        }
+
+        /* Responsive video resizing */
+        #video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Side Ad sections */
+        .ad-section {
+            position: fixed;
+            top: 60px;
+            width: 100px;
+            background-color: #f0f0f0;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .ad-left {
+            left: 0;
+            bottom: 330px; /* Keeps the ad above the video player */
+        }
+
+        .ad-right {
+            right: 0;
+            bottom: 330px; /* Keeps the ad above the video player */
+        }
+
+        /* Uploaded text display box */
+        .uploaded-text {
+            max-width: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            #video-container {
+                width: 100%;
+                max-width: 260px;
+                height: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #video-container {
+                width: 100%;
+                max-width: 200px;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation bar -->
+    <div class="navbar">
+        <div class="logo">Logo</div>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">About</a>
+        </div>
+        <div class="nav-links">
+            <a href="#">Sign In</a>
+        </div>
+    </div>
+
+    <!-- Ad section on the left -->
+    <div class="ad-section ad-left">
+        ADVERT
+    </div>
+
+    <!-- Document viewer (Upload Section) -->
+    <div class="upload-page" id="viewer">
+        <div id="root"></div> <!-- React component (UploadPage.js) will render here -->
+    </div>
+
+    <!-- Ad section on the right -->
+    <div class="ad-section ad-right">
+        ADVERT
+    </div>
+
+    <!-- Video Section -->
+    <div id="video-container">
+        <iframe id="video" src="https://www.youtube.com/embed/85z7jqGAGcc?autoplay=1&mute=1&loop=1&playlist=85z7jqGAGcc" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <!-- React and ReactDOM scripts -->
+    <script src="https://unpkg.com/react/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Axios CDN -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Your React component -->
+    <script type="text/babel">
+        const UploadPage = () => {
+            const [file, setFile] = React.useState(null);
+            const [audioFile, setAudioFile] = React.useState(null);
+            const [error, setError] = React.useState(null);
+            const [documentText, setDocumentText] = React.useState(''); // State for extracted text
+
+            const handleFileChange = (e) => {
+                setFile(e.target.files[0]);
+                setError(null);
+            };
+
+            const handleUpload = () => {
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    // Send the file to the backend server
+                    axios.post('http://localhost:5000/upload', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    })
+                    .then((response) => {
+                        setDocumentText(response.data.text); // Set extracted text
+                        setAudioFile(response.data.audio);   // Set audio file URL
+                    })
+                    .catch((err) => {
+                        console.error("Error uploading file", err);
+                        setError('Failed to upload the file. Please try again.');
+                    });
+                } else {
+                    setError('Please select a file before uploading.');
+                }
+            };
+
+            return (
+                <div className="upload-page">
+                    <h1>Upload Document for Text-to-Speech</h1>
+                    
+                    <input type="file" accept=".docx,.pdf,.pptx" onChange={handleFileChange} />
+                    <button onClick={handleUpload}>Upload</button>
+                    {error && <p className="error-message">{error}</p>}
+
+                    {documentText && (
+                        <div className="uploaded-text">
+                            <h3>Uploaded Document:</h3>
+                            <p>{documentText}</p> {/* Display extracted text here */}
+                        </div>
+                    )}
+
+                    {audioFile && (
+                        <div style={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+                            <h3>Generated Audio:</h3>
+                            <audio controls style={{ marginLeft: '10px' }}>
+                                <source src={audioFile} type="audio/mp3" />
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Rendering the UploadPage component
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <React.StrictMode>
+                <UploadPage />
+            </React.StrictMode>
+        );
+    </script>
+
+</body>
 </html>
